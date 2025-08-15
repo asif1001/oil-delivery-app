@@ -1,0 +1,54 @@
+From https://github.com/asif1001/oil-delivery-app
+   ac8786b..85e7d9c  main       -> origin/main
+Updating ac8786b..85e7d9c
+Fast-forward
+ CREATE_ADMIN_USER.md   | 164 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------------
+ URGENT_FIREBASE_FIX.md | 158 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------------
+ firebase.json          |   1 +
+ 3 files changed, 244 insertions(+), 79 deletions(-)
+@asif1001 ➜ /workspaces/oil-delivery-app (main) $ git pull
+Already up to date.
+@asif1001 ➜ /workspaces/oil-delivery-app (main) $ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.19 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1763 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /workspaces/oil-delivery-app/node_modules/jszip/dist/jszip.min.js is dynamically imported by /workspaces/oil-delivery-app/client/src/lib/firebase.ts but also statically imported by /workspaces/oil-delivery-app/client/src/components/TransactionViewer.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                     1.23 kB │ gzip:   0.63 kB
+../dist/public/assets/index-nOD_ggKo.css     79.63 kB │ gzip:  13.32 kB
+../dist/public/assets/index-D5kHJ-gW.js   1,105.22 kB │ gzip: 296.04 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.39s
+
+  dist/index.js  36.1kb
+
+⚡ Done in 6ms
+@asif1001 ➜ /workspaces/oil-delivery-app (main) $ firebase deploy --only hosting
+
+=== Deploying to 'oil-delivery-6bcc4'...
+
+i  deploying hosting
+i  hosting[oil-delivery-6bcc4]: beginning deploy...
+i  hosting[oil-delivery-6bcc4]: found 3 files in dist/public
+✔  hosting[oil-delivery-6bcc4]: file upload complete
+i  hosting[oil-delivery-6bcc4]: finalizing version...
+✔  hosting[oil-delivery-6bcc4]: version finalized
+i  hosting[oil-delivery-6bcc4]: releasing new version...
+✔  hosting[oil-delivery-6bcc4]: release complete
+
+✔  Deploy complete!
+
+Project Console: https://console.firebase.google.com/project/oil-delivery-6bcc4/overview
+Hosting URL: https://oil-delivery-6bcc4.web.app
+@asif1001 ➜ /workspaces/oil-delivery-app (main) $ 

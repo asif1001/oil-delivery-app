@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Deliveries - authenticated users can read/write
+    match /deliveries/{deliveryId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Complaints - authenticated users can read/write
+    match /complaints/{complaintId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Tasks - authenticated users can read/write
+    match /tasks/{taskId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Branches - authenticated users can read, admin can write
+    match /branches/{branchId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Oil types - authenticated users can read, admin can write
+    match /oilTypes/{oilTypeId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Transactions - authenticated users can read/write
+    match /transactions/{transactionId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Load sessions - authenticated users can read/write
+    match /loadSessions/{sessionId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

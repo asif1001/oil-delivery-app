@@ -1,0 +1,48 @@
+> continue with this and Build me a responsive, multi-role Oil Delivery Tracking App with the following **user-facing features and workflows** >
+*1. Login**
+>
+ Users enter email & password to access their dashboard
+>
+*2. Driver Experience**
+>
+ **Home screen** with buttons:
+>
+ 1. **New Delivery**
+ 2. **Preview Last Delivery** (read-only)
+ 3. **Edit Today’s Delivery** (if not yet submitted)
+ 4. **Raise Complaint**
+ **New Delivery Wizard (6 steps):**
+>
+ 1. Choose Oil Type; enter “Liters Loaded” and “Main Tank Meter”; snap timestamped photo
+ 2. Select Branch and Delivery Number; snap “Before” tank-level photo and hose-connection photo; show/edit previous meter reading
+ 3. (Pump runs—no user input)
+ 4. Snap “After” tank-level photo; enter “Finish Meter”; auto-calculate (and allow edit of) unloaded liters
+ 5. Review all entries & photos on a single summary screen
+ 6. Submit delivery
+ **Raise Complaint:** select branch & issue type, enter description, upload up to 3 timestamped photos
+>
+*3. Admin Experience**
+>
+ **Dashboard** with tabs or menu for:
+>
+ * **Deliveries** (list all, filter by date/branch/oil type/driver, export CSV)
+ * **Complaints** (list all, view photos, change status “Open / In Progress / Closed”)
+ * **Drivers** (create new driver accounts, reset/deactivate)
+ * **Branches** (add/edit locations)
+ * **Oil Types** (add/edit fuel categories)
+ * **Settings** (dev: wipe all data)
+>
+*4. Reporting**
+>
+ From any list view, export a CSV containing meaningful columns (timestamp, branch, oil type, meter readings, liters, driver, status, complaint details)
+>
+*5. Photo Requirements**
+>
+ Every uploaded photo must display the capture timestamp overlayed on the image before upload
+>
+*6. Security & Roles**
+>
+ Drivers only see driver menus and can only submit or view their own deliveries/complaints
+ Admins have full access to all records and management features
+
+Use this prompt to guide the AI in generating screens, components, and user flows for the Oil Delivery Tracking App.

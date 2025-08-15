@@ -1,0 +1,55 @@
+In our oil delivery tracking app (React + Firebase), update both LoadingWorkflow and SupplyWorkflow so that every photo captured or selected by the user is watermarked before upload.
+
+Watermark details:
+
+Text must include:
+
+Branch: [branchName] (from the currently selected branch in the workflow or from the delivery record)
+
+Time: [completed timestamp] (use the same timestamp saved in Firestore for the step completion)
+
+For LoadingWorkflow: add Type: Loading as an extra line.
+
+For SupplyWorkflow: add Type: Supply and also Driver: [driverName] (from the logged-in user profile).
+
+Position: bottom-right corner of the photo.
+
+White text with a semi-transparent black background box (rounded corners, some padding, subtle shadow).
+
+Use a <canvas> to draw the original image, add the label background, write the text, then export it back as a JPEG (max quality 0.9).
+
+Keep photo size under ~300 KB after watermarking.
+
+Implementation steps:
+
+Create a reusable utility function watermarkImage(file, { branchName, timestamp, extraLine1, extraLine2 }) in /src/utils/watermark.ts that:
+
+Loads the image into a canvas.
+
+Draws the watermark text + background.
+
+Returns a new File object ready to upload.
+
+In LoadingWorkflow, before uploading each photo (tankLevelBefore, hoseConnection, tankLevelAfter, etc.), pass the raw File into watermarkImage with:
+
+branchName from the workflow data.
+
+timestamp as the current step's completion time.
+
+extraLine2: "Type: Loading".
+
+In SupplyWorkflow, before uploading each photo (meterReadingPhoto, tankLevelPhoto, finalTankLevelPhoto, etc.), pass the raw File into watermarkImage with:
+
+branchName from the workflow data.
+
+timestamp as the current step's completion time.
+
+extraLine1: "Driver: [driverName]".
+
+extraLine2: "Type: Supply".
+
+Upload the watermarked file to Firebase Storage instead of the raw image.
+
+Continue saving the download URL in Firestore as before.
+
+Make sure to handle both camera-captured images (<input type="file" capture="environment">) and file uploads. Keep all existing validation and compression logic, but insert watermarking just before the upload step.

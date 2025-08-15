@@ -1,0 +1,75 @@
+Here’s a clean, copy-paste prompt you can give your AI/dev agent:
+
+---
+
+**Goal:**
+Make the **AdminDashboard (Overview tab)** show a **“Recent Transactions (Last 10)”** card that MATCHES the DriverDashboard card in layout and behavior, and enable **full-size photo viewing** from the Admin transaction details.
+
+**What to build (exact):**
+
+1. **Recent Transactions Card (Admin)**
+
+   * Create a unified list combining:
+
+     * `deliveries` → map as `{ type: 'supply', timestamp: completedTimestamp || createdAt, ... }`
+     * `transactions` filtered to `type in ['loading','supply']`
+   * Normalize each item fields:
+
+     * `id`
+     * `type` ('loading' | 'supply')
+     * `timestamp` (Firestore TS or Date/ISO)
+     * `oilTypeName` (fallback “Unknown Oil Type”)
+     * `quantity` = `deliveredLiters ?? loadedLiters ?? quantity ?? 0`
+     * `driverName` = resolve from `drivers` by `driverUid` → `displayName || email || 'Unknown Driver'`
+     * `branchName` (only for `supply`) resolve from `branches` by `branchId` → `name || stored branchName || 'Unknown Branch'`
+     * `photos` – gather from:
+
+       * `photos.tankLevelBefore`, `photos.tankLevel`, `photos.hoseConnection`, `photos.tankLevelAfter`, `photos.loadPhoto`
+       * root: `tankLevelPhoto`, `hoseConnectionPhoto`, `finalTankLevelPhoto`
+   * Sort DESC by `timestamp`, take **10**.
+   * Render rows identical to Driver:
+
+     * Badge color: blue for LOADING, orange for SUPPLY
+     * Oil type, quantity, and “• Delivered to {branch}” if supply
+     * Date/time with calendar icon
+     * Driver name, and Branch (if supply)
+     * **View** button → opens Admin transaction modal using `setSelectedTransaction(tx)` + `setShowTransactionModal(true)`.
+
+2. **Admin Transaction Details Modal**
+
+   * Show Type, Oil Type, Quantity, Driver, Branch (if supply), Date/Time, optional IDs/meters.
+   * Render **thumbnails** for any available photo keys from `photos` or root fields listed above.
+   * On thumbnail click → open full-size photo modal via `setSelectedPhoto({ url, label })` and `setShowPhotoModal(true)`.
+
+3. **Full-Size Photo Modal (Admin)**
+
+   * Black background container, image `object-contain`, max height fits viewport.
+   * Header with label + **Download** + **Close**.
+   * Footer with **Open in New Tab** + **Download Photo**.
+   * Reuse existing Admin state: `selectedPhoto`, `showPhotoModal`.
+
+**Files/Areas to edit:**
+
+* `AdminDashboard.tsx` → Overview tab: replace current “Recent Transactions” block with the unified + normalized version (same visual as Driver).
+* Reuse existing components/icons: `Card`, `CardHeader`, `CardContent`, `CardTitle`, `Button`, `ClockIcon`, `Calendar`, `EyeIcon`.
+
+**Data sources already available:**
+
+* Arrays: `deliveries`, `transactions`, `drivers`, `branches`.
+* State hooks: `setSelectedTransaction`, `setShowTransactionModal`, `setSelectedPhoto`, `setShowPhotoModal`.
+
+**Edge cases & fallbacks:**
+
+* Missing names → “Unknown Driver”, “Unknown Branch”, “Unknown Oil Type”.
+* Timestamps can be Firestore `Timestamp` or Date/ISO → format both.
+* Quantity may be in different fields (use priority order above).
+
+**Acceptance Criteria:**
+
+* Admin card visually/behaviorally matches Driver card.
+* Shows both `loading` and `supply`, newest first, max 10.
+* **View** opens the Admin modal with correct data.
+* Photo thumbnails appear when URLs exist; clicking opens a working full-size viewer with **Download** and **Open in New Tab**.
+* No TypeScript errors.
+
+---

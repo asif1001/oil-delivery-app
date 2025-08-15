@@ -1,0 +1,52 @@
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+Receiving objects: 100% (3/3), done.
+@asif1001 ➜ /workspaces/oildelivery/oildelivery (main) $ # Test SSH connection (this will verify the key is working)
+ssh -T git@github.com
+
+# Set up the remote (should work now with SSH)
+git remote set-url origin git@github.com:asif1001/oildelivery-app.git
+
+# Push to GitHub
+git push -u origin main
+The authenticity of host 'github.com (20.207.73.82)' can't be established.
+ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.
+git@github.com: Permission denied (publickey).
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+@asif1001 ➜ /workspaces/oildelivery/oildelivery (main) $ ssh -T git@github.com
+git@github.com: Permission denied (publickey).
+@asif1001 ➜ /workspaces/oildelivery/oildelivery (main) $ git clone https://github.com/asif1001/oildelivery-app.git
+cd oildelivery-app
+npm install
+# Create .env file with Firebase config
+npm run dev
+Cloning into 'oildelivery-app'...
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+Receiving objects: 100% (3/3), done.
+npm ERR! code ENOENT
+npm ERR! syscall open
+npm ERR! path /workspaces/oildelivery/oildelivery/oildelivery-app/package.json
+npm ERR! errno -2
+npm ERR! enoent ENOENT: no such file or directory, open '/workspaces/oildelivery/oildelivery/oildelivery-app/package.json'
+npm ERR! enoent This is related to npm not being able to find a file.
+npm ERR! enoent 
+
+npm ERR! A complete log of this run can be found in: /home/codespace/.npm/_logs/2025-08-15T01_37_41_311Z-debug-0.log
+npm ERR! code ENOENT
+npm ERR! syscall open
+npm ERR! path /workspaces/oildelivery/oildelivery/oildelivery-app/package.json
+npm ERR! errno -2
+npm ERR! enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/workspaces/oildelivery/oildelivery/oildelivery-app/package.json'
+npm ERR! enoent This is related to npm not being able to find a file.
+npm ERR! enoent 
+
+npm ERR! A complete log of this run can be found in: /home/codespace/.npm/_logs/2025-08-15T01_37_42_284Z-debug-0.log
+@asif1001 ➜ /workspaces/oildelivery/oildelivery/oildelivery-app (main) $ 
