@@ -9,7 +9,7 @@ import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 
 // Version number - update this whenever code changes are made
-const APP_VERSION = "v1.2.3";
+const APP_VERSION = "v1.3.0";
 
 export default function Login() {
   const [email, setEmail] = useState('');

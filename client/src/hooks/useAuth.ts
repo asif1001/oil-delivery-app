@@ -44,23 +44,11 @@ export function useAuth() {
 
   const checkAuthStatus = async () => {
     try {
-      console.log('Checking auth status with Replit Auth...');
-      const response = await fetch('/api/auth/user', {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        console.log('✅ Found authenticated user:', userData);
-        
-        // Store in localStorage for persistence
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        setUserData(userData);
-      } else {
-        console.log('❌ No authenticated user found');
-        setUserData(null);
-        localStorage.removeItem('currentUser');
-      }
+      console.log('Checking auth status with Firebase...');
+      // For GitHub Pages, we only rely on localStorage session
+      console.log('❌ No authenticated user found');
+      setUserData(null);
+      localStorage.removeItem('currentUser');
     } catch (error) {
       console.error('Error checking auth status:', error);
       setUserData(null);
@@ -71,19 +59,19 @@ export function useAuth() {
   };
 
   const login = () => {
-    // Redirect to Replit Auth login
-    window.location.href = '/api/login';
+    // For GitHub Pages, redirect to login page
+    window.location.href = '/login';
   };
 
   const logout = () => {
     console.log('🔓 Logging out user...');
     
-    // Clear local storage first
+    // Clear local storage
     localStorage.removeItem('currentUser');
     setUserData(null);
     
-    // Redirect directly to logout endpoint - let server handle the session cleanup and redirect
-    window.location.href = '/api/logout';
+    // For GitHub Pages, just reload to login page
+    window.location.href = '/login';
   };
 
   return {
