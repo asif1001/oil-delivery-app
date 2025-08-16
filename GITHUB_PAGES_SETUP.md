@@ -14,11 +14,17 @@ Your OILDELIVERY app has been modified to work perfectly with GitHub Pages while
 ### 1. Build the App
 ```bash
 npm run build
+cp -r dist/public/* dist/ && rm -rf dist/public
 ```
 
 ### 2. Deploy to GitHub Pages
 ```bash
 node deploy.js
+```
+
+**Alternative Manual Deploy:**
+```bash
+npx gh-pages -d dist
 ```
 
 ### 3. Configure GitHub Repository
