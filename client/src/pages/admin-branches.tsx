@@ -230,7 +230,7 @@ export default function AdminBranches({
                             <SelectValue placeholder="Select oil type" />
                           </SelectTrigger>
                           <SelectContent>
-                            {oilTypes.map(oilType => (
+                            {oilTypes?.map(oilType => (
                               <SelectItem key={oilType.id} value={oilType.id}>
                                 {oilType.name}
                               </SelectItem>
@@ -285,7 +285,7 @@ export default function AdminBranches({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {branches.map((branch) => (
+        {branches?.map((branch) => (
           <Card key={branch.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -348,7 +348,7 @@ export default function AdminBranches({
         ))}
       </div>
 
-      {branches.length === 0 && (
+      {(!branches || branches.length === 0) && (
         <Card className="text-center py-12">
           <CardContent>
             <MapPinIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />

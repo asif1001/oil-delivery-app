@@ -352,7 +352,7 @@ export default function AdminDrivers({
       </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {drivers.map((driver) => (
+        {drivers?.map((driver) => (
           <Card key={driver.uid} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -445,7 +445,7 @@ export default function AdminDrivers({
         ))}
       </div>
 
-      {drivers.length === 0 && (
+      {(!drivers || drivers.length === 0) && (
         <Card className="text-center py-12">
           <CardContent>
             <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />

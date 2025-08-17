@@ -191,7 +191,7 @@ export default function AdminOilTypes({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {oilTypes.map((oilType) => (
+        {oilTypes?.map((oilType) => (
           <Card key={oilType.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -239,7 +239,7 @@ export default function AdminOilTypes({
         ))}
       </div>
 
-      {oilTypes.length === 0 && (
+      {(!oilTypes || oilTypes.length === 0) && (
         <Card className="text-center py-12">
           <CardContent>
             <DropletIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
