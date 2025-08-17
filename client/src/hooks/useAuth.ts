@@ -60,8 +60,8 @@ export function useAuth() {
   };
 
   const login = () => {
-    // For GitHub Pages, redirect to login page
-    window.location.href = '/login';
+    // Stay within the app path
+    window.location.reload();
   };
 
   const logout = () => {
@@ -71,8 +71,8 @@ export function useAuth() {
     localStorage.removeItem('currentUser');
     setUserData(null);
     
-    // For GitHub Pages, just reload to login page
-    window.location.href = '/login';
+    // Stay within the app - just reload to trigger login page
+    window.location.reload();
   };
 
   return {

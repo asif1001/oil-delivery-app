@@ -79,7 +79,7 @@ export default function Login() {
       
       // Force page reload to trigger auth check and routing
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = window.location.origin + window.location.pathname;
       }, 100);
       
     } catch (error: any) {
