@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 
 interface User {
-  id: string;
+  uid: string;
+  id?: string;
   email: string | null;
   role: string;
   displayName: string | null;

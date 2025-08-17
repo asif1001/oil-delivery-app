@@ -77,8 +77,10 @@ export default function Login() {
         description: `Successfully signed in as ${userSession.role}`
       });
       
-      // Force immediate redirect without delay
-      window.location.reload();
+      // Force page reload to trigger auth check and routing
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
       
     } catch (error: any) {
       console.error("Login error:", error);

@@ -38,4 +38,12 @@ if (fs.existsSync(publicDir)) {
   console.log('✅ Copied public assets to dist');
 }
 
+// Copy 404.html for GitHub Pages SPA support
+const notFoundPath = path.join(__dirname, '404.html');
+const distNotFoundPath = path.join(distDir, '404.html');
+if (fs.existsSync(notFoundPath)) {
+  fs.copyFileSync(notFoundPath, distNotFoundPath);
+  console.log('✅ Copied 404.html for GitHub Pages SPA support');
+}
+
 console.log('🎉 GitHub Pages deployment fixed!');
