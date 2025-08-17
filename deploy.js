@@ -1,5 +1,5 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
+import { execSync } from 'child_process';
+import fs from 'fs';
 
 console.log('🏗️  Building app for GitHub Pages...');
 
@@ -12,9 +12,13 @@ if (fs.existsSync('dist/public')) {
   console.log('✅ Build output fixed for GitHub Pages');
 }
 
+// Run the GitHub Pages fix script
+execSync('node fix-github-pages.js', { stdio: 'inherit' });
+
 // Deploy with gh-pages
 console.log('🚀 Deploying to GitHub Pages...');
-execSync('npx gh-pages -d dist -m "Deploy OILDELIVERY v1.3.0 to GitHub Pages"', { stdio: 'inherit' });
+execSync('npx gh-pages -d dist -m "Deploy OILDELIVERY v1.3.0 - Fixed paths for GitHub Pages"', { stdio: 'inherit' });
 
 console.log('🎉 Successfully deployed to GitHub Pages!');
 console.log('📱 Your app will be live at: https://asif1001.github.io/oil-delivery-app');
+console.log('⏳ Wait 5-10 minutes for changes to take effect');
