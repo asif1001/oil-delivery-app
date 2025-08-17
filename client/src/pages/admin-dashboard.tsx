@@ -137,7 +137,9 @@ interface CreateDriver {
   licenceExpiryDate: string;
 }
 
-// Removed unused component imports - functionality integrated into this dashboard
+import AdminBranches from "./admin-branches";
+import AdminOilTypes from "./admin-oil-types";
+import AdminDrivers from "./admin-drivers";
 import TaskCreationDialog from "@/components/task-creation-dialog";
 import TaskList from "@/components/task-list";
 import SettingsPanel from "@/components/settings-panel";
@@ -915,21 +917,32 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           </TabsContent>
 
           <TabsContent value="drivers">
-            <div className="text-center py-8 text-gray-500">
-              Driver management functionality integrated into this dashboard
-            </div>
+            <AdminDrivers
+              drivers={drivers}
+              onAddDriver={handleAddDriver}
+              onUpdateDriver={handleUpdateDriver}
+              onDeleteDriver={handleDeleteDriver}
+              onToggleDriverStatus={handleToggleDriverStatus}
+            />
           </TabsContent>
 
           <TabsContent value="branches">
-            <div className="text-center py-8 text-gray-500">
-              Branch management functionality integrated into this dashboard
-            </div>
+            <AdminBranches
+              branches={branches}
+              oilTypes={oilTypes}
+              onAddBranch={handleAddBranch}
+              onUpdateBranch={handleUpdateBranch}
+              onDeleteBranch={handleDeleteBranch}
+            />
           </TabsContent>
 
           <TabsContent value="oil-types">
-            <div className="text-center py-8 text-gray-500">
-              Oil type management functionality integrated into this dashboard
-            </div>
+            <AdminOilTypes
+              oilTypes={oilTypes}
+              onAddOilType={handleAddOilType}
+              onUpdateOilType={handleUpdateOilType}
+              onDeleteOilType={handleDeleteOilType}
+            />
           </TabsContent>
 
           <TabsContent value="tasks">
