@@ -312,8 +312,8 @@ export default function AdminBranches({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <h4 className="font-medium text-sm">Oil Tanks ({branch.oilTanks.length})</h4>
-                {branch.oilTanks.length > 0 ? (
+                <h4 className="font-medium text-sm">Oil Tanks ({branch.oilTanks?.length || 0})</h4>
+                {branch.oilTanks && branch.oilTanks.length > 0 ? (
                   <div className="space-y-2">
                     {branch.oilTanks.map((tank, index) => (
                       <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">

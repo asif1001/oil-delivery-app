@@ -54,6 +54,7 @@ interface Complaint {
   branchName?: string;
   oilTypeId?: string;
   oilTypeName?: string;
+  location?: string;
   photos: string[];
   watermarkedPhotos: string[];
   createdAt: Date;
@@ -70,6 +71,7 @@ interface CreateComplaint {
   priority: 'low' | 'medium' | 'high' | 'critical';
   branchId?: string;
   oilTypeId?: string;
+  location?: string;
   photos: string[];
 }
 
@@ -100,8 +102,13 @@ export default function ComplaintManagement() {
     priority: 'medium',
     branchId: '',
     oilTypeId: '',
+    location: '',
     photos: []
   });
+
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [customLocation, setCustomLocation] = useState('');
+  const [showCustomLocation, setShowCustomLocation] = useState(false);
 
   const [resolution, setResolution] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
@@ -192,6 +199,50 @@ export default function ComplaintManagement() {
         });
       }
     }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            // Create canvas to add watermark
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            if (context) {
+              // Draw the uploaded image
+              context.drawImage(img, 0, 0);
+              
+              // Add watermark
+              addWatermark(context, canvas.width, canvas.height);
+              
+              const watermarkedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+              setCapturedPhotos(prev => [...prev, watermarkedDataUrl]);
+              setFormData(prev => ({ ...prev, photos: [...prev.photos, watermarkedDataUrl] }));
+              
+              toast({
+                title: "Photo Uploaded",
+                description: "Photo uploaded with watermark successfully"
+              });
+            }
+          };
+          img.src = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Reset the input value so the same file can be uploaded again
+    event.target.value = '';
   };
 
   const addWatermark = (context: CanvasRenderingContext2D, width: number, height: number) => {
@@ -392,9 +443,13 @@ export default function ComplaintManagement() {
       priority: 'medium',
       branchId: '',
       oilTypeId: '',
+      location: '',
       photos: []
     });
     setCapturedPhotos([]);
+    setSelectedLocation('');
+    setCustomLocation('');
+    setShowCustomLocation(false);
     stopCamera();
   };
 
@@ -555,6 +610,49 @@ export default function ComplaintManagement() {
                   </div>
                 </div>
 
+                {/* Location Selection */}
+                <div>
+                  <Label>Location</Label>
+                  <Select 
+                    value={showCustomLocation ? 'custom' : selectedLocation} 
+                    onValueChange={(value) => {
+                      if (value === 'custom') {
+                        setShowCustomLocation(true);
+                        setSelectedLocation('');
+                      } else {
+                        setShowCustomLocation(false);
+                        setSelectedLocation(value);
+                        setFormData(prev => ({ ...prev, location: value }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select location or enter custom" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map(branch => (
+                        <SelectItem key={branch.id} value={branch.name}>
+                          {branch.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="custom">Enter Custom Location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {showCustomLocation && (
+                    <div className="mt-2">
+                      <Input
+                        value={customLocation}
+                        onChange={(e) => {
+                          setCustomLocation(e.target.value);
+                          setFormData(prev => ({ ...prev, location: e.target.value }));
+                        }}
+                        placeholder="Enter custom location"
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => { setShowCreateModal(false); resetForm(); }}>
                     Cancel
@@ -571,12 +669,27 @@ export default function ComplaintManagement() {
                   <Label>Photo Evidence</Label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                     {!isCapturing ? (
-                      <div className="text-center">
+                      <div className="text-center space-y-3">
                         <CameraIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                        <Button onClick={startCamera}>
-                          Start Camera
-                        </Button>
-                        <p className="text-sm text-gray-500 mt-2">
+                        <div className="flex gap-2 justify-center">
+                          <Button onClick={startCamera}>
+                            <CameraIcon className="h-4 w-4 mr-2" />
+                            Take Photo
+                          </Button>
+                          <Button variant="outline" onClick={() => document.getElementById('photo-upload')?.click()}>
+                            <ImageIcon className="h-4 w-4 mr-2" />
+                            Upload Photo
+                          </Button>
+                        </div>
+                        <input
+                          id="photo-upload"
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          style={{ display: 'none' }}
+                          onChange={handleFileUpload}
+                        />
+                        <p className="text-sm text-gray-500">
                           Photos will be automatically watermarked with timestamp and user info
                         </p>
                       </div>
@@ -889,6 +1002,13 @@ export default function ComplaintManagement() {
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Oil Type</Label>
                       <p className="mt-1">{selectedComplaint.oilTypeName}</p>
+                    </div>
+                  )}
+
+                  {selectedComplaint.location && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Location</Label>
+                      <p className="mt-1">{selectedComplaint.location}</p>
                     </div>
                   )}
 
