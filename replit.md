@@ -13,7 +13,7 @@ User access: Restricted to pre-authorized company users only.
 User roles: Drivers and admins with separate dashboards and permissions.
 Future plans: Clone to GitHub for further development.
 Documentation requirements: Comprehensive README.md with complete setup instructions and dependency lists.
-Recent Success: December 2024 - Original working authentication system restored, login issues resolved. January 2025 - Logout functionality fully restored and working correctly. August 2025 - All individual admin pages restored as requested by user, maintaining both integrated dashboards and individual management pages.
+Recent Success: December 2024 - Original working authentication system restored, login issues resolved. January 2025 - Logout functionality fully restored and working correctly. August 2025 - All individual admin pages restored as requested by user, maintaining both integrated dashboards and individual management pages. Driver dashboard recent transactions visibility fixed with proper Firebase data loading. Comprehensive complaint management system with photo watermarks and camera capture functionality implemented. Complaint status tracking and admin resolution workflow with task manager integration completed.
 
 ## System Architecture
 
@@ -52,6 +52,9 @@ Recent Success: December 2024 - Original working authentication system restored,
 - **Image Handling**: Automatic image compression and timestamp overlays before Firebase upload.
 - **Data Integrity**: Cascading deletes for related transactions upon branch/oil type removal.
 - **Meter Reading Validation**: Start meter reading cannot exceed finish meter reading in supply workflow.
+- **Complaint Management**: Comprehensive complaint system with photo watermarks, camera capture, status tracking (open, in-progress, resolved, closed), admin resolution workflow, and task manager integration.
+- **Transaction Visibility**: Fixed driver dashboard recent transactions with proper Firebase data loading and display.
+- **Photo Evidence System**: Complaint photo evidence mirrors driver workflow with automatic timestamp and user watermarks.
 - **Comprehensive Documentation**: Complete README.md with setup instructions, dependencies, and architecture details.
 
 ## External Dependencies
