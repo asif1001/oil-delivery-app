@@ -62,9 +62,14 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
 
   const loadTransactions = async () => {
     try {
-      // Use empty array for now since Firebase access is not working
-      // This will be replaced with proper backend API calls
-      const userTransactions: any[] = [];
+      // Get all transactions from Firebase
+      const allTransactions = await getAllTransactions();
+      
+      // Filter transactions for current user
+      const userTransactions = allTransactions.filter((transaction: any) => 
+        transaction.driverId === user.id || transaction.driverUid === user.id
+      );
+      
       setTransactions(userTransactions);
       
       // Calculate today's delivery stats by oil type
@@ -72,12 +77,31 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
       today.setHours(0, 0, 0, 0);
       
       const todayStats: {[key: string]: number} = {};
+      userTransactions.forEach((transaction: any) => {
+        const transactionDate = transaction.timestamp?.toDate ? transaction.timestamp.toDate() : new Date(transaction.timestamp);
+        if (transactionDate >= today && transaction.type === 'supply') {
+          const oilTypeName = transaction.oilTypeName || 'Unknown';
+          todayStats[oilTypeName] = (todayStats[oilTypeName] || 0) + (transaction.oilLiters || 0);
+        }
+      });
       setTodayDeliveryStats(todayStats);
       
-      // Get recent transactions - empty for now
-      setRecentTransactions([]);
+      // Get recent transactions (last 10)
+      const sortedTransactions = userTransactions
+        .sort((a: any, b: any) => {
+          const dateA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+          const dateB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+          return dateB.getTime() - dateA.getTime();
+        })
+        .slice(0, 10);
+      
+      setRecentTransactions(sortedTransactions);
     } catch (error) {
       console.error('Error loading transactions:', error);
+      // Fallback to empty arrays on error
+      setTransactions([]);
+      setRecentTransactions([]);
+      setTodayDeliveryStats({});
     }
   };
 

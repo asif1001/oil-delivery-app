@@ -959,6 +959,12 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                       View All Tasks
                     </Button>
                   </Link>
+                  <Link to="/complaint-management">
+                    <Button variant="outline" size="sm">
+                      <AlertTriangleIcon className="w-4 h-4 mr-2" />
+                      Complaints
+                    </Button>
+                  </Link>
                   <TaskCreationDialog onAdd={handleAddTask} drivers={drivers} />
                 </div>
               </div>
@@ -970,11 +976,19 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               />
               {tasks.length > 5 && (
                 <div className="text-center pt-4 border-t">
-                  <Link to="/task-management">
-                    <Button variant="ghost" size="sm">
-                      View all {tasks.length} tasks →
-                    </Button>
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link to="/task-management">
+                      <Button variant="ghost" size="sm" className="flex-1">
+                        View all {tasks.length} tasks →
+                      </Button>
+                    </Link>
+                    <Link to="/complaint-management">
+                      <Button variant="ghost" size="sm" className="flex-1">
+                        <AlertTriangleIcon className="h-4 w-4 mr-1" />
+                        Complaints ({openComplaints})
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>

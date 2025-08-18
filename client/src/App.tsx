@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import DriverDashboard from "@/pages/driver-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import TaskManagement from "@/pages/task-management";
+import ComplaintManagement from "@/pages/complaint-management";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -36,6 +37,7 @@ function Router() {
           <Route path="/" component={() => <AdminDashboard user={userData} />} />
           <Route path="/admin-dashboard" component={() => <AdminDashboard user={userData} />} />
           <Route path="/task-management" component={() => <TaskManagement />} />
+          <Route path="/complaint-management" component={() => <ComplaintManagement />} />
         </>
       ) : userData.role === 'driver' ? (
         <>

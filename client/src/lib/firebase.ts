@@ -754,12 +754,48 @@ export const getAllDeliveries = async () => {
 
 export const getAllComplaints = async () => {
   try {
-    // In a real app, this would query Firestore
-    // For now, return empty array
-    return [];
+    const complaintsCollection = collection(db, 'complaints');
+    const snapshot = await getDocs(complaintsCollection);
+    return snapshot.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+      updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+      resolvedAt: doc.data().resolvedAt?.toDate() || null
+    }));
   } catch (error) {
     console.error('Error getting all complaints:', error);
     return [];
+  }
+};
+
+export const saveComplaint = async (complaintData: any) => {
+  try {
+    const complaintRef = doc(collection(db, 'complaints'));
+    const complaintWithId = {
+      ...complaintData,
+      id: complaintRef.id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    await setDoc(complaintRef, complaintWithId);
+    return complaintWithId;
+  } catch (error) {
+    console.error('Error saving complaint:', error);
+    throw error;
+  }
+};
+
+export const updateComplaint = async (id: string, complaintData: any) => {
+  try {
+    const complaintRef = doc(db, 'complaints', id);
+    await updateDoc(complaintRef, {
+      ...complaintData,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error('Error updating complaint:', error);
+    throw error;
   }
 };
 
@@ -1331,7 +1367,12 @@ export const getAllTransactions = async () => {
   try {
     const transactionsCollection = collection(db, 'transactions');
     const snapshot = await getDocs(transactionsCollection);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a: any, b: any) => 
+    return snapshot.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data(),
+      timestamp: doc.data().timestamp?.toDate() || new Date(),
+      createdAt: doc.data().createdAt?.toDate() || new Date()
+    })).sort((a: any, b: any) => 
       new Date(b.timestamp?.toDate ? b.timestamp.toDate() : b.timestamp).getTime() - 
       new Date(a.timestamp?.toDate ? a.timestamp.toDate() : a.timestamp).getTime()
     ) as any[];
