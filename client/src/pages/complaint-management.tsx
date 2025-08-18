@@ -33,7 +33,10 @@ import {
   CalendarIcon,
   MapPinIcon,
   DropletIcon,
-  ImageIcon
+  ImageIcon,
+  EditIcon,
+  SaveIcon,
+  XIcon
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -102,6 +105,8 @@ export default function ComplaintManagement() {
 
   const [resolution, setResolution] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<Complaint>>({});
 
   useEffect(() => {
     loadData();
@@ -315,6 +320,68 @@ export default function ComplaintManagement() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleEditComplaint = (complaint: Complaint) => {
+    setEditForm({
+      id: complaint.id,
+      title: complaint.title,
+      description: complaint.description,
+      category: complaint.category,
+      priority: complaint.priority,
+      status: complaint.status,
+      assignedTo: complaint.assignedTo,
+      branchId: complaint.branchId,
+      oilTypeId: complaint.oilTypeId
+    });
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      if (!editForm.id) return;
+
+      await updateComplaint(editForm.id, {
+        title: editForm.title,
+        description: editForm.description,
+        category: editForm.category,
+        priority: editForm.priority,
+        status: editForm.status,
+        assignedTo: editForm.assignedTo,
+        branchId: editForm.branchId,
+        oilTypeId: editForm.oilTypeId,
+        updatedAt: new Date()
+      });
+
+      toast({
+        title: "Complaint Updated",
+        description: "Complaint has been successfully updated"
+      });
+
+      setIsEditing(false);
+      setEditForm({});
+      loadData();
+      
+      // Update the selected complaint in modal if it's open
+      if (selectedComplaint?.id === editForm.id) {
+        const updatedComplaint = complaints.find(c => c.id === editForm.id);
+        if (updatedComplaint) {
+          setSelectedComplaint({ ...updatedComplaint, ...editForm });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating complaint:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update complaint",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditForm({});
   };
 
   const resetForm = () => {
@@ -669,12 +736,37 @@ export default function ComplaintManagement() {
               <DialogHeader>
                 <div className="flex justify-between items-start">
                   <div>
-                    <DialogTitle className="text-xl">{selectedComplaint.title}</DialogTitle>
+                    {isEditing && editForm.id === selectedComplaint.id ? (
+                      <Input
+                        value={editForm.title || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                        className="text-xl font-semibold"
+                      />
+                    ) : (
+                      <DialogTitle className="text-xl">{selectedComplaint.title}</DialogTitle>
+                    )}
                     <DialogDescription>
-                      Complaint #{selectedComplaint.id}
+                      Complaint #{selectedComplaint.id} • Reported by {selectedComplaint.reporterName}
                     </DialogDescription>
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex items-center space-x-2">
+                    {isEditing && editForm.id === selectedComplaint.id ? (
+                      <>
+                        <Button size="sm" onClick={handleSaveEdit}>
+                          <SaveIcon className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                          <XIcon className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => handleEditComplaint(selectedComplaint)}>
+                        <EditIcon className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    )}
                     <Badge className={getPriorityColor(selectedComplaint.priority)}>
                       {selectedComplaint.priority}
                     </Badge>
@@ -689,13 +781,85 @@ export default function ComplaintManagement() {
                 <div className="space-y-4">
                   <div>
                     <Label className="text-sm font-medium text-gray-600">Description</Label>
-                    <p className="mt-1">{selectedComplaint.description}</p>
+                    {isEditing && editForm.id === selectedComplaint.id ? (
+                      <Textarea
+                        value={editForm.description || ''}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                        rows={4}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="mt-1">{selectedComplaint.description}</p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Category</Label>
-                      <p className="mt-1 capitalize">{selectedComplaint.category}</p>
+                      {isEditing && editForm.id === selectedComplaint.id ? (
+                        <Select 
+                          value={editForm.category || selectedComplaint.category} 
+                          onValueChange={(value: any) => setEditForm(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="equipment">Equipment</SelectItem>
+                            <SelectItem value="delivery">Delivery</SelectItem>
+                            <SelectItem value="safety">Safety</SelectItem>
+                            <SelectItem value="customer">Customer</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="mt-1 capitalize">{selectedComplaint.category}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Priority</Label>
+                      {isEditing && editForm.id === selectedComplaint.id ? (
+                        <Select 
+                          value={editForm.priority || selectedComplaint.priority} 
+                          onValueChange={(value: any) => setEditForm(prev => ({ ...prev, priority: value }))}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="mt-1 capitalize">{selectedComplaint.priority}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Status</Label>
+                      {isEditing && editForm.id === selectedComplaint.id ? (
+                        <Select 
+                          value={editForm.status || selectedComplaint.status} 
+                          onValueChange={(value: any) => setEditForm(prev => ({ ...prev, status: value }))}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="open">Open</SelectItem>
+                            <SelectItem value="in-progress">In Progress</SelectItem>
+                            <SelectItem value="resolved">Resolved</SelectItem>
+                            <SelectItem value="closed">Closed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="mt-1 capitalize">{selectedComplaint.status.replace('-', ' ')}</p>
+                      )}
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Reporter</Label>

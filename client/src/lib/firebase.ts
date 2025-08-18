@@ -731,9 +731,20 @@ export const getUserDeliveries = async (driverId: string) => {
 // Get complaints for a specific driver
 export const getUserComplaints = async (driverId: string) => {
   try {
-    // In a real app, this would query Firestore
-    // For now, return empty array
-    return [];
+    const complaintsCollection = collection(db, 'complaints');
+    const q = query(
+      complaintsCollection, 
+      where('reportedBy', '==', driverId),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data(),
+      createdAt: doc.data().createdAt || new Date(),
+      updatedAt: doc.data().updatedAt || new Date(),
+      resolvedAt: doc.data().resolvedAt || null
+    }));
   } catch (error) {
     console.error('Error getting user complaints:', error);
     return [];

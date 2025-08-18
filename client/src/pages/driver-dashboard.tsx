@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LogOutIcon, TruckIcon, DropletIcon, ClockIcon, EyeIcon, Calendar, User, XIcon, DownloadCloudIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { LogOutIcon, TruckIcon, DropletIcon, ClockIcon, EyeIcon, Calendar, User, XIcon, DownloadCloudIcon, AlertTriangleIcon, PlusIcon, CameraIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingWorkflow } from "@/components/LoadingWorkflow";
 import { SupplyWorkflow } from "@/components/SupplyWorkflow";
-import { getAllDeliveries, getUserByUid, getAllTransactions, getAllOilTypes } from "@/lib/firebase";
+import { getAllDeliveries, getUserByUid, getAllTransactions, getAllOilTypes, getUserComplaints, saveComplaint, getAllBranches } from "@/lib/firebase";
 import { useUserProfile, useTransactions } from "@/hooks/useFirebaseAPI";
 
 import { useToast } from "@/hooks/use-toast";
@@ -41,11 +46,25 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<{url: string, label: string} | null>(null);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  
+  // Complaint state
+  const [complaints, setComplaints] = useState<any[]>([]);
+  const [showComplaintModal, setShowComplaintModal] = useState(false);
+  const [showCreateComplaintModal, setShowCreateComplaintModal] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
+  const [complaintForm, setComplaintForm] = useState({
+    title: '',
+    description: '',
+    category: 'other',
+    priority: 'medium',
+    photos: [] as string[]
+  });
 
   useEffect(() => {
     loadDeliveries();
     loadUserProfile();
     loadTransactions();
+    loadComplaints();
   }, [user.id]);
 
   const loadDeliveries = async () => {
@@ -105,7 +124,62 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
     }
   };
 
+  const loadComplaints = async () => {
+    try {
+      const userComplaints = await getUserComplaints(user.id);
+      setComplaints(userComplaints);
+    } catch (error) {
+      console.error('Error loading complaints:', error);
+      setComplaints([]);
+    }
+  };
 
+  const handleSubmitComplaint = async () => {
+    try {
+      if (!complaintForm.title || !complaintForm.description) {
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const complaintData = {
+        ...complaintForm,
+        reportedBy: user.id,
+        reporterName: user.displayName || user.email || 'Unknown Driver',
+        status: 'open' as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        watermarkedPhotos: complaintForm.photos
+      };
+
+      await saveComplaint(complaintData);
+
+      toast({
+        title: "Complaint Submitted",
+        description: "Your complaint has been submitted successfully"
+      });
+
+      setShowCreateComplaintModal(false);
+      setComplaintForm({
+        title: '',
+        description: '',
+        category: 'other',
+        priority: 'medium',
+        photos: []
+      });
+      loadComplaints();
+    } catch (error) {
+      console.error('Error submitting complaint:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit complaint",
+        variant: "destructive"
+      });
+    }
+  };
 
   const loadUserProfile = async () => {
     try {
@@ -243,7 +317,7 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
         </div>
 
         {/* Status Cards */}
-        <div className="grid grid-cols-1 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Deliveries</CardTitle>
@@ -263,6 +337,45 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
                   <p>No deliveries completed today</p>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">My Complaints</CardTitle>
+              <AlertTriangleIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{complaints.length}</div>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <div className="flex justify-between">
+                  <span>Open:</span>
+                  <span className="font-medium text-red-600">
+                    {complaints.filter(c => c.status === 'open').length}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>In Progress:</span>
+                  <span className="font-medium text-yellow-600">
+                    {complaints.filter(c => c.status === 'in-progress').length}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Resolved:</span>
+                  <span className="font-medium text-green-600">
+                    {complaints.filter(c => c.status === 'resolved').length}
+                  </span>
+                </div>
+              </div>
+              <Button 
+                onClick={() => setShowCreateComplaintModal(true)}
+                size="sm" 
+                className="w-full mt-3"
+                variant="outline"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Report Issue
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -307,6 +420,66 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
                     </Button>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* My Complaints Section */}
+        {complaints.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangleIcon className="h-5 w-5" />
+                My Complaints ({complaints.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {complaints.slice(0, 5).map((complaint, index) => (
+                  <div key={complaint.id || index} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
+                    <div className="flex-1">
+                      <div className="font-medium">{complaint.title}</div>
+                      <div className="text-sm text-gray-600 line-clamp-1">
+                        {complaint.description}
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge 
+                          variant={complaint.status === 'open' ? 'destructive' : 
+                                   complaint.status === 'in-progress' ? 'default' : 'secondary'}
+                        >
+                          {complaint.status}
+                        </Badge>
+                        <Badge variant="outline">
+                          {complaint.priority}
+                        </Badge>
+                        <div className="text-xs text-gray-500">
+                          {complaint.createdAt?.toDate ? 
+                            complaint.createdAt.toDate().toLocaleDateString() : 
+                            'Unknown date'
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedComplaint(complaint);
+                        setShowComplaintModal(true);
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <EyeIcon className="h-4 w-4" />
+                      View
+                    </Button>
+                  </div>
+                ))}
+                {complaints.length > 5 && (
+                  <div className="text-center text-sm text-gray-500">
+                    And {complaints.length - 5} more complaints...
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -695,6 +868,195 @@ export default function DriverDashboard({ user }: DriverDashboardProps) {
                   <DownloadCloudIcon className="h-4 w-4 mr-1" />
                   Download Photo
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Complaint Modal */}
+      <Dialog open={showCreateComplaintModal} onOpenChange={setShowCreateComplaintModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Report an Issue</DialogTitle>
+            <DialogDescription>
+              Describe the issue you're experiencing. Add photos for evidence if needed.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="complaint-title">Issue Title *</Label>
+              <Input
+                id="complaint-title"
+                value={complaintForm.title}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Brief description of the issue"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="complaint-description">Description *</Label>
+              <Textarea
+                id="complaint-description"
+                value={complaintForm.description}
+                onChange={(e) => setComplaintForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Detailed description of the issue"
+                rows={4}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Category</Label>
+                <Select value={complaintForm.category} onValueChange={(value) => setComplaintForm(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="equipment">Equipment Issue</SelectItem>
+                    <SelectItem value="delivery">Delivery Problem</SelectItem>
+                    <SelectItem value="safety">Safety Concern</SelectItem>
+                    <SelectItem value="customer">Customer Issue</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Priority</Label>
+                <Select value={complaintForm.priority} onValueChange={(value) => setComplaintForm(prev => ({ ...prev, priority: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => {
+                setShowCreateComplaintModal(false);
+                setComplaintForm({
+                  title: '',
+                  description: '',
+                  category: 'other',
+                  priority: 'medium',
+                  photos: []
+                });
+              }}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmitComplaint}>
+                Submit Complaint
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Complaint Modal */}
+      <Dialog open={showComplaintModal} onOpenChange={setShowComplaintModal}>
+        <DialogContent className="max-w-3xl">
+          {selectedComplaint && (
+            <div className="space-y-6">
+              <DialogHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <DialogTitle className="text-xl">{selectedComplaint.title}</DialogTitle>
+                    <DialogDescription>
+                      Complaint #{selectedComplaint.id} • Reported on {selectedComplaint.createdAt?.toDate ? selectedComplaint.createdAt.toDate().toLocaleDateString() : 'Unknown date'}
+                    </DialogDescription>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Badge 
+                      variant={selectedComplaint.status === 'open' ? 'destructive' : 
+                               selectedComplaint.status === 'in-progress' ? 'default' : 'secondary'}
+                    >
+                      {selectedComplaint.status}
+                    </Badge>
+                    <Badge variant="outline">
+                      {selectedComplaint.priority}
+                    </Badge>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Description</Label>
+                  <p className="mt-1">{selectedComplaint.description}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Category</Label>
+                    <p className="mt-1 capitalize">{selectedComplaint.category}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Priority</Label>
+                    <p className="mt-1 capitalize">{selectedComplaint.priority}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Status</Label>
+                    <p className="mt-1 capitalize">{selectedComplaint.status.replace('-', ' ')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Last Updated</Label>
+                    <p className="mt-1">{selectedComplaint.updatedAt?.toDate ? selectedComplaint.updatedAt.toDate().toLocaleDateString() : 'Unknown date'}</p>
+                  </div>
+                </div>
+
+                {selectedComplaint.resolution && (
+                  <div className="pt-4 border-t">
+                    <Label className="text-sm font-medium text-gray-600">Resolution</Label>
+                    <div className="mt-1 p-3 bg-green-50 border border-green-200 rounded">
+                      <p>{selectedComplaint.resolution}</p>
+                      {selectedComplaint.resolvedAt && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          Resolved on {selectedComplaint.resolvedAt.toDate ? selectedComplaint.resolvedAt.toDate().toLocaleString() : 'Unknown date'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedComplaint.watermarkedPhotos && selectedComplaint.watermarkedPhotos.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">
+                      Photo Evidence ({selectedComplaint.watermarkedPhotos.length})
+                    </Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {selectedComplaint.watermarkedPhotos.map((photo: string, index: number) => (
+                        <div key={index} className="relative">
+                          <img 
+                            src={photo} 
+                            alt={`Evidence ${index + 1}`}
+                            className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => {
+                              setSelectedPhoto({
+                                url: photo,
+                                label: `Evidence ${index + 1}`
+                              });
+                              setShowPhotoModal(true);
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all rounded flex items-center justify-center">
+                            <EyeIcon className="h-4 w-4 text-white opacity-0 hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
